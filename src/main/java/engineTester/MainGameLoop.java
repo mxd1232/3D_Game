@@ -32,23 +32,21 @@ public class MainGameLoop {
         Loader loader = new Loader();
 
 
-        Light light = new Light(new Vector3f(0,10000,-70000),new Vector3f(1,1,1));
-        List<Light> lights = new ArrayList<>();
-        lights.add(light);
-        lights.add(new Light(new Vector3f(-200,10,-200),new Vector3f(10,0,0)));
-        lights.add(new Light(new Vector3f(200,10,200),new Vector3f(0,0,10)));
+
 
         ModelData data = OBJFileLoader.loadOBJ("tree");
 
         RawModel playerModel = OBJLoader.loadOBJModel("IronMan",loader);
-        TexturedModel playerTextured = new TexturedModel(playerModel,new ModelTexture(loader.loadTexture("colorCube")));
-        Player player = new Player(playerTextured,new Vector3f(100,0,-50),0,0,0,0.03f);
+        TexturedModel playerTextured = new TexturedModel(playerModel,new ModelTexture(loader.loadTexture("red")));
+        playerTextured.getTexture().setShineDamper(35);
+        playerTextured.getTexture().setReflectivity(1);
+        Player player = new Player(playerTextured,new Vector3f(150,10,-300),0,0,0,0.03f);
+
 
         Camera camera = new Camera(player);
 
         List<GuiTexture> guis = new ArrayList<>();
-        GuiTexture gui = new GuiTexture(loader.loadTexture("socuwan"),new Vector2f(0.5f,0.5f)
-        ,new Vector2f(0.25f,0.25f));
+        GuiTexture gui = new GuiTexture(loader.loadTexture("socuwan"),new Vector2f(0.9f,0.9f),new Vector2f(0.1f,0.1f));
         guis.add(gui);
 
         GuiRenderer guiRenderer = new GuiRenderer(loader);
@@ -62,6 +60,7 @@ public class MainGameLoop {
         TerrainTexturePack texturePack = new TerrainTexturePack(backgroundTexture,rTexture,gTexture,bTexture);
 
         TerrainTexture blendMap = new TerrainTexture(loader.loadTexture("blendMap"));
+        Terrain terrain = new Terrain(0,-1,loader,texturePack,blendMap,"heightmap");
 
         //************MODELS************************
 
@@ -79,13 +78,29 @@ public class MainGameLoop {
         fern.getTexture().setHasTransparency(true);
         fern.getTexture().setUsFakeLighting(true);
         fern.getTexture().setNumberOfRows(2);
-        Terrain terrain = new Terrain(0,-1,loader,texturePack,blendMap,"heightmap");
+
+        TexturedModel lamp = new TexturedModel( OBJLoader.loadOBJModel("lamp",loader),new ModelTexture(loader.loadTexture("lamp")));
+        lamp.getTexture().setUsFakeLighting(true);
+
+
         //Terrain terrain2 = new Terrain(-1,-1,loader,texturePack,blendMap,"heightmap");
+
+
+        //******LIGHTS**********
+        List<Light> lights = new ArrayList<>();
+        lights.add(new Light(new Vector3f(0,1000,-7000),new Vector3f(0.4f,0.4f,0.4f)));
+        lights.add(new Light(new Vector3f(185,10,-293),new Vector3f(4,0,0),new Vector3f(1,0.1f,0.002f)));
+        lights.add(new Light(new Vector3f(370,17,-300),new Vector3f(0,4,4),new Vector3f(1,0.1f,0.002f)));
+        lights.add(new Light(new Vector3f(293,7,-305),new Vector3f(4,4,0),new Vector3f(1,0.1f,0.002f)));
 
 
 
         List<Entity> entities = new ArrayList<>();
         Random random = new Random();
+
+        entities.add((new Entity(lamp,new Vector3f(185,-4.7f,-293),0,0,0,1)));
+        entities.add((new Entity(lamp,new Vector3f(370,4.2f,-300),0,0,0,1)));
+        entities.add((new Entity(lamp,new Vector3f(293,-6.8f,-305),0,0,0,1)));
 
         for(int i =0;i<500;i++){
 
@@ -113,6 +128,7 @@ public class MainGameLoop {
         }
 
         MasterRenderer renderer = new MasterRenderer();
+        float i=-0;
         while(!Display.isCloseRequested())
         {
             camera.move();
@@ -125,8 +141,12 @@ public class MainGameLoop {
             {
                 renderer.processEntity(entity);
             }
-
-
+         /* LIGHT CHANGE
+          lights.get(0).setColor(new Vector3f(i,i,i));
+            lights.get(0).setPosition(new Vector3f(0,i*10000-10000,-70000+i*10000));
+            if(i<5)
+            i+=0.001;
+          */
 
             renderer.render(lights,camera);
             guiRenderer.render(guis);
